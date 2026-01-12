@@ -15,7 +15,7 @@ export default function OnboardingLayout({ children }) {
   }, [completed, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted">
+    <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="w-full max-w-2xl rounded-xl bg-background p-8 shadow">
         {children}
       </div>

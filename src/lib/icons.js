@@ -1,9 +1,16 @@
 "use client";
 
-import * as LucideIconsImport from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
-const LucideIcons = LucideIconsImport || {};
+// lucide-react exports object { IconName: Component }
+export const ICONS_OBJECT = LucideIcons;
 
-export const ICONS = Array.isArray(Object.entries(LucideIcons))
-  ? Object.entries(LucideIcons).map(([name, Icon]) => ({ name, Icon }))
-  : [];
+// array version (for map / filter)
+export const ALL_ICONS = Object.keys(ICONS_OBJECT).map((name) => ({
+  name,
+  Icon: ICONS_OBJECT[name],
+}));
+
+export function getIconByName(name) {
+  return ICONS_OBJECT[name] || ICONS_OBJECT.Circle;
+}

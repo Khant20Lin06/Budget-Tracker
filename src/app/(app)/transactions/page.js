@@ -11,13 +11,16 @@ export default function TransactionsPage() {
   const handleSave = (data) => {
     if (editing) {
       setTransactions((prev) =>
-        prev.map((t) => (t.id === editing.id ? data : t))
+        prev.map((t) => (t.id === editing.id ? { ...editing, ...data } : t))
       );
       setEditing(null);
     } else {
       setTransactions((prev) => [
+        {
+          ...data,
+          id: crypto.randomUUID(),
+        },
         ...prev,
-        { ...data, id: crypto.randomUUID() },
       ]);
     }
   };
@@ -27,14 +30,21 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Transactions</h1>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+          Transactions
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Track all your income and expenses in one place.
+        </p>
+      </div>
 
-      <TransactionForm
-        initialData={editing}
-        onSubmit={handleSave}
-      />
+      {/* Form */}
+      <TransactionForm initialData={editing} onSubmit={handleSave} />
 
+      {/* List */}
       <TransactionList
         transactions={transactions}
         onEdit={setEditing}

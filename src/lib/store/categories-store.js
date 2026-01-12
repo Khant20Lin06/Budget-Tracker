@@ -1,12 +1,12 @@
+// src/lib/store/categories-store.js
 "use client";
 
-// src/lib/store/categories-store.js
 import { create } from "zustand";
 
 export const useCategories = create((set) => ({
-  categories: [], // default empty array
+  categories: [],
   addCategory: (category) =>
-    set((state) => ({ categories: [...state.categories, category] })),
+    set((state) => ({ categories: [category, ...state.categories] })),
   updateCategory: (id, updates) =>
     set((state) => ({
       categories: state.categories.map((c) =>

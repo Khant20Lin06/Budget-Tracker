@@ -4,7 +4,8 @@ import { useState } from "react";
 import CategoryList from "@/components/categories/category-list";
 import CategoryForm from "@/components/categories/category-form";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -14,48 +15,63 @@ export default function CategoriesPage() {
   const handleSave = (data) => {
     if (editing) {
       setCategories((prev) =>
-        prev.map((c) => (c.id === editing.id ? data : c))
+        prev.map((c) => (c.id === editing.id ? { ...c, ...data } : c))
       );
     } else {
-      setCategories((prev) => [...prev, { ...data, id: crypto.randomUUID() }]);
+      setCategories((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), ...data },
+      ]);
     }
-    setOpen(false);
+
     setEditing(null);
-  };
-
-  const handleEdit = (category) => {
-    setEditing(category);
-    setOpen(true);
-  };
-
-  const handleDelete = (id) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+    setOpen(false);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Categories</h1>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Top header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            Categories
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Organize your income & expense categories with smart icon suggestions.
+          </p>
+        </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>Add Category</Button>
+            <Button className="rounded-xl gap-2">
+              <Plus className="h-4 w-4" />
+              Add Category
+            </Button>
           </DialogTrigger>
 
-          <DialogContent>
-            <CategoryForm
-              initialData={editing}
-              onSubmit={handleSave}
-            />
+          <DialogContent className="max-w-xl rounded-2xl border border-slate-200/70 bg-white/90 backdrop-blur shadow-xl dark:border-slate-800 dark:bg-slate-950/70">
+            <DialogTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
+              {editing ? "Edit Category" : "Add Category"}
+            </DialogTitle>
+
+            <CategoryForm initialData={editing} onSubmit={handleSave} />
           </DialogContent>
         </Dialog>
       </div>
 
-      <CategoryList
-        categories={categories}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {/* Content */}
+      <div className="mt-8">
+        <CategoryList
+          categories={categories}
+          onEdit={(cat) => {
+            setEditing(cat);
+            setOpen(true);
+          }}
+          onDelete={(id) =>
+            setCategories((prev) => prev.filter((c) => c.id !== id))
+          }
+        />
+      </div>
     </div>
   );
 }
