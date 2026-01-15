@@ -49,7 +49,7 @@ export default function CategoriesPage() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="max-w-xl rounded-2xl border border-slate-200/70 bg-white/90 backdrop-blur shadow-xl dark:border-slate-800 dark:bg-slate-950/70">
+          <DialogContent className="max-w-3xl rounded-3xl bg-slate-950/95 border-white/10 text-white p-6 sm:p-8">
             <DialogTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
               {editing ? "Edit Category" : "Add Category"}
             </DialogTitle>

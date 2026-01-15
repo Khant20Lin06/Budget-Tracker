@@ -52,9 +52,9 @@ export default function AnalyticsCategoryPie({ filters }) {
         </div>
       </CardHeader>
 
-      <CardContent className="h-[340px] p-4">
+      <CardContent className="h-[340px] p-4 min-w-0">
         {data.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
+          <div className="h-full w-full min-w-0">
             No expense data yet.
           </div>
         ) : (

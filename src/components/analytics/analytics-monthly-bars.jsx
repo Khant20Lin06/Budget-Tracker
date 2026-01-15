@@ -53,41 +53,38 @@ function buildMonthlyData(transactions = [], filters) {
   return arr;
 }
 
-export default function AnalyticsMonthlyBars({ filters }) {
-  const { transactions } = useTransactions();
+export default function AnalyticsMonthlyBars({ transactions = [], filters, exporting }) {
   const data = buildMonthlyData(transactions, filters);
 
   return (
-    <Card className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40 overflow-hidden">
-      <CardHeader className="border-b border-slate-200/70 bg-white/60 dark:border-slate-800 dark:bg-slate-950/20">
+    <Card className="rounded-2xl overflow-hidden">
+      <CardHeader className="border-b">
         <div>
-          <p className="text-lg font-bold text-slate-900 dark:text-white">
-            Income vs Expense
-          </p>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
-            Monthly comparison
-          </p>
+          <p className="text-lg font-bold">Income vs Expense</p>
+          <p className="text-sm text-muted-foreground">Monthly comparison</p>
         </div>
       </CardHeader>
 
-      <CardContent className="h-[340px] p-4">
-        {data.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
-            No data yet.
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barSize={16}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip />
-              <Bar dataKey="income" radius={[10, 10, 0, 0]} />
-              <Bar dataKey="expense" radius={[10, 10, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+      <CardContent className="p-4">
+        <div className="h-[340px] w-full min-w-0">
+          {exporting ? (
+            <div className="h-full w-full rounded-2xl border flex items-center justify-center text-sm text-slate-500">
+              Chart hidden for export
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+              <BarChart data={data}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="income" />
+                <Bar dataKey="expense" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
+
