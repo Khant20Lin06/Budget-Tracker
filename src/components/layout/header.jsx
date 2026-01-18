@@ -13,6 +13,7 @@ import {
   LogIn,
   LogOut,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const NAV = [
   { href: "/dashboard", label: "Home" },
@@ -53,6 +54,7 @@ function useThemeMode() {
 export default function Header() {
   const pathname = usePathname();
   const { mounted, mode, toggle } = useThemeMode();
+  const { isAuthed, user, logout } = useAuth();
 
   // Mobile drawer
   const [openMenu, setOpenMenu] = useState(false);
@@ -159,38 +161,49 @@ export default function Header() {
                 {openProfile ? (
                   <div className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1020]/95 backdrop-blur shadow-2xl">
                     <div className="px-4 py-4 border-b border-white/10">
-                      <div className="text-base font-bold">Alex Morgan</div>
+                      <div className="text-base font-bold">
+                        {isAuthed ? (user?.username || "User") : "Guest"}
+                      </div>
                       <div className="text-sm text-white/70">
-                        admin@budgetflow.app
+                        {isAuthed ? (user?.email || "—") : "Please login to continue"}
                       </div>
                     </div>
 
                     <div className="p-3 space-y-2">
-                      {/* Login/Logout (mock buttons) */}
-                      <button
-                        type="button"
-                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 transition px-4 py-3 text-sm font-semibold"
-                        onClick={() => {
-                          // TODO: login action later
-                          setOpenProfile(false);
-                        }}
-                      >
-                        <LogIn className="h-4 w-4" />
-                        Login
-                      </button>
+                      {!isAuthed ? (
+                        <>
+                          <Link
+                            href="/login"
+                            onClick={() => setOpenProfile(false)}
+                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 transition px-4 py-3 text-sm font-semibold"
+                          >
+                            <LogIn className="h-4 w-4" />
+                            Login
+                          </Link>
 
-                      <button
-                        type="button"
-                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 transition px-4 py-3 text-sm font-semibold"
-                        onClick={() => {
-                          // TODO: logout action later
-                          setOpenProfile(false);
-                        }}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
+                          <Link
+                            href="/register"
+                            onClick={() => setOpenProfile(false)}
+                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600/90 hover:bg-blue-600 transition px-4 py-3 text-sm font-semibold text-white"
+                          >
+                            Register
+                          </Link>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 transition px-4 py-3 text-sm font-semibold"
+                          onClick={() => {
+                            setOpenProfile(false);
+                            logout?.();
+                          }}
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      )}
                     </div>
+
                   </div>
                 ) : null}
               </div>

@@ -24,14 +24,14 @@ export default function CategoryPie() {
 
   return (
     <Card className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
-      <CardHeader className="pb-0">
+      {/* <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Expense by Category
         </CardTitle>
         <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
           Where your money goes
         </CardDescription>
-      </CardHeader>
+      </CardHeader> */}
 
       <CardContent className="h-[320px] p-4 sm:p-6">
         {!data?.length ? (

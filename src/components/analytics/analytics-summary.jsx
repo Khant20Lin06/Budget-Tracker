@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, Sparkles, Wallet } from "lucide-react";
-import { useTransactions } from "@/lib/store/transactions-store";
 
 function formatMoney(n) {
   const val = Number(n || 0);
@@ -19,9 +18,7 @@ function withinRange(date, from, to) {
   return true;
 }
 
-export default function AnalyticsSummary({ filters }) {
-  const { transactions, income, expense, balance } = useTransactions();
-
+export default function AnalyticsSummary({ filters, transactions = [] }) {
   const filtered = useMemo(() => {
     const list = transactions || [];
     return list.filter((t) => {
@@ -30,8 +27,7 @@ export default function AnalyticsSummary({ filters }) {
 
       const s = (filters?.search || "").trim().toLowerCase();
       if (!s) return true;
-      const hay =
-        `${t.categoryName || ""} ${t.note || ""}`.toLowerCase();
+      const hay = `${t.categoryName || ""} ${t.note || ""}`.toLowerCase();
       return hay.includes(s);
     });
   }, [transactions, filters]);
@@ -70,31 +66,18 @@ export default function AnalyticsSummary({ filters }) {
 
   return (
     <div className="space-y-4">
-      {/* Insight Banner */}
       <div className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-          Quick insight
-        </p>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          {insight}
-        </p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">Quick insight</p>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{insight}</p>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         {items.map(({ title, value, Icon, badge }) => (
-          <Card
-            key={title}
-            className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40"
-          >
+          <Card key={title} className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                  {title}
-                </p>
-                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
-                  {value}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
               </div>
               <div className={`h-11 w-11 rounded-2xl flex items-center justify-center ${badge}`}>
                 <Icon className="h-5 w-5" />

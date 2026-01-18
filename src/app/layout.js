@@ -29,21 +29,37 @@
 // }
 
 
+// import "./globals.css";
+// import { TransactionsProvider } from "@/lib/store/transactions-store";
+// import { useTransactions } from "@/lib/store/transactions-store";
+
+
+// export const metadata = {
+//   title: "Budget Tracker",
+// };
+
+// export default function RootLayout({ children }) {
+//   return (
+//     <html lang="en">
+//       <body>
+//         <useTransactions>{children}</useTransactions>
+          
+
+//       </body>
+//     </html>
+//   );
+// }
+
+
+// src/app/layout.js
 import "./globals.css";
-import { TransactionsProvider } from "@/lib/store/transactions-store";
-
-
-export const metadata = {
-  title: "Budget Tracker",
-};
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <TransactionsProvider>
-          {children}
-        </TransactionsProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

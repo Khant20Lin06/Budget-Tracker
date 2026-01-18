@@ -24,33 +24,50 @@ export default function MonthlyTrend() {
 
   return (
     <Card className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
-      <CardHeader className="pb-0">
+      {/* <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Monthly Trend
         </CardTitle>
         <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
           Income and expense over time
         </CardDescription>
-      </CardHeader>
+      </CardHeader> */}
 
-      <CardContent className="h-[360px] p-4 sm:p-6">
+      <CardContent className="p-4 sm:p-6">
         {!data?.length ? (
-          <div className="h-full flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="h-[340px] w-full min-w-0 flex items-center justify-center text-sm text-slate-500 dark:text-slate-400">
             No trend data yet
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip content={<Tip />} />
-              <Line type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+          // ✅ IMPORTANT: wrap with fixed height
+          <div className="h-[340px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="4 4" vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <Tooltip content={<Tip />} />
+
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  stroke="#22c55e"
+                  strokeWidth={3}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="expense"
+                  stroke="#ef4444"
+                  strokeWidth={3}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
+
     </Card>
   );
 }

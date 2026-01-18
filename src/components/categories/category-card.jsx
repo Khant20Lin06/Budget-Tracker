@@ -16,7 +16,7 @@ export default function CategoryCard({ category, onEdit, onDelete }) {
           </div>
 
           <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-950">
+            <p className="truncate font-semibold text-slate-600">
               {category.name}
             </p>
             <p className="truncate text-xs text-slate-600">

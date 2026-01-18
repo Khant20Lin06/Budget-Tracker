@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect,useMemo, useRef, useState } from "react";
 import { CalendarDays, TrendingUp } from "lucide-react";
 
 import AnalyticsSummary from "./analytics-summary";
@@ -71,7 +71,7 @@ function applyFilters(t, filters) {
 }
 
 export default function AnalyticsOverview() {
-  const { transactions } = useTransactions();
+  const { transactions, fetchTransactions } = useTransactions();
 
   // ✅ MUST be inside component + BEFORE exportPDF
   const exportRef = useRef(null);
@@ -92,6 +92,10 @@ export default function AnalyticsOverview() {
     () => ({ tab, from, to, search, ...dialogFilters }),
     [tab, from, to, search, dialogFilters]
   );
+
+  useEffect(() => {
+  fetchTransactions(filters);
+}, [fetchTransactions, filters]);
 
   const filteredTx = useMemo(() => {
     return (transactions || []).filter((t) => applyFilters(t, filters));

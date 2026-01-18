@@ -1,77 +1,100 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, Wallet } from "lucide-react";
+import { useMemo } from "react";
+import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { useTransactions } from "@/lib/store/transactions-store";
 
-function formatMoney(n) {
-  const num = Number(n || 0);
-  return (
-    "$" +
-    num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  );
+function money(n) {
+  const v = Number(n || 0);
+  return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function pickSummary(summary) {
+  // ✅ try many shapes (because store/response often different)
+  const total =
+    summary?.total_balance ??
+    summary?.balance ??
+    summary?.total ??
+    summary?.totalBalance ??
+    0;
+
+  const income =
+    summary?.income ??
+    summary?.total_income ??
+    summary?.totalIncome ??
+    0;
+
+  const expense =
+    summary?.expense ??
+    summary?.total_expense ??
+    summary?.totalExpense ??
+    0;
+
+  return { total, income, expense };
 }
 
 export default function StatsCards() {
-  const { balance, income, expense } = useTransactions();
+  const { summary } = useTransactions(); // make sure your store exposes this
+  const { total, income, expense } = useMemo(() => pickSummary(summary), [summary]);
 
-  const stats = [
+  const cards = [
     {
       title: "Total Balance",
-      value: formatMoney(balance),
+      value: money(total),
       Icon: Wallet,
-      pill: "bg-blue-500/10 text-blue-400 ring-blue-500/20",
+      badge: "Net",
     },
     {
       title: "Income",
-      value: formatMoney(income),
-      Icon: ArrowUp,
-      pill: "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20",
+      value: money(income),
+      Icon: TrendingUp,
+      badge: "In",
     },
     {
       title: "Expense",
-      value: formatMoney(expense),
-      Icon: ArrowDown,
-      pill: "bg-rose-500/10 text-rose-400 ring-rose-500/20",
+      value: money(expense),
+      Icon: TrendingDown,
+      badge: "Out",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      {stats.map(({ title, value, Icon, pill }) => (
-        <Card
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {cards.map(({ title, value, Icon, badge }) => (
+        <div
           key={title}
-          className="group rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40"
+          className="rounded-3xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-white/10 dark:bg-white/5 overflow-hidden"
         >
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                {title}
-              </p>
+          <div className="p-5">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold tracking-wide text-slate-500 dark:text-white/60 uppercase">
+                  {title}
+                </p>
 
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {value}
-              </p>
+                <div className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  {value}
+                </div>
+              </div>
 
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                Updated just now
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-slate-200/70 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
+                  {badge}
+                </span>
+
+                <div className="h-11 w-11 rounded-2xl bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center dark:bg-white/5 dark:ring-white/10">
+                  <Icon className="h-5 w-5 text-slate-900 dark:text-white" />
+                </div>
+              </div>
             </div>
 
-            <div
-              className={[
-                "h-12 w-12 rounded-2xl ring-1 flex items-center justify-center",
-                pill,
-                "transition group-hover:scale-[1.03]",
-              ].join(" ")}
-            >
-              <Icon className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+            <div className="mt-4 h-px bg-slate-200/70 dark:bg-white/10" />
+
+            <p className="mt-3 text-xs text-slate-500 dark:text-white/60">
+              Updated from your latest transactions
+            </p>
+          </div>
+        </div>
       ))}
     </div>
   );

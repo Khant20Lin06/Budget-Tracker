@@ -1,11 +1,16 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/lib/store/onboarding-store";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function StepWelcome() {
   const { next } = useOnboarding();
+
+  useEffect(() => {
+  // next(); // auto-skip ချင်မှ run once
+}, []);
 
   return (
     <div className="space-y-8">

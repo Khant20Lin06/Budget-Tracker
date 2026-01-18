@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTransactions } from "@/lib/store/transactions-store";
-import { useLocalStorage } from "@/lib/use-local-storage";
+import { useGoals } from "@/lib/store/goals-store";
 
 function monthKey(date) {
     const d = new Date(date);
@@ -18,27 +18,85 @@ function monthLabel(key) {
     return d.toLocaleString("en-US", { month: "long", year: "numeric" });
 }
 
+function monthYYYYMMDD(d = new Date()) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${yyyy}-${mm}-01`; // ✅ YYYY-MM-DD
+}
+
 export default function AnalyticsGoals() {
     const { transactions } = useTransactions();
+    const { fetchGoals, upsertGoal, getGoalForMonth, saving, loading, error } = useGoals();
 
-    const currentMonth = monthKey(new Date());
-    const [target, setTarget] = useLocalStorage("goal:monthlyBudget", "1000");
-    const [savingTarget, setSavingTarget] = useLocalStorage("goal:monthlySaving", "300");
+    const currentMonth = monthYYYYMMDD();
+    const currentMonthKey = monthKey(new Date());
+
+    // local UI state (input ထဲရေးတဲ့ value)
+    const [target, setTarget] = useState("1000");
+    const [savingTarget, setSavingTarget] = useState("300");
+
+    // ✅ load goals once
+    useEffect(() => {
+        fetchGoals?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ✅ when goals loaded, fill inputs from API (current month)
+    useEffect(() => {
+        const g = getGoalForMonth?.(currentMonth);
+        if (!g) return;
+        setTarget(String(g.monthlyBudget ?? 0));
+        setSavingTarget(String(g.monthlySaving ?? 0));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentMonth, loading]); // loading ပြီးမှ fill
 
     const stats = useMemo(() => {
-        const monthTx = (transactions || []).filter((t) => monthKey(t.date) === currentMonth);
-        const income = monthTx.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount || 0), 0);
-        const expense = monthTx.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amount || 0), 0);
+        const monthTx = (transactions || []).filter(
+            (t) => monthKey(t.date) === currentMonth
+        );
+        const income = monthTx
+            .filter((t) => t.type === "income")
+            .reduce((s, t) => s + Number(t.amount || 0), 0);
+
+        const expense = monthTx
+            .filter((t) => t.type === "expense")
+            .reduce((s, t) => s + Number(t.amount || 0), 0);
+
         const net = income - expense;
 
         const budget = Number(target || 0);
         const saveGoal = Number(savingTarget || 0);
 
         const spendPct = budget > 0 ? Math.min(100, (expense / budget) * 100) : 0;
-        const netPct = saveGoal > 0 ? Math.min(100, (Math.max(0, net) / saveGoal) * 100) : 0;
+        const netPct =
+            saveGoal > 0 ? Math.min(100, (Math.max(0, net) / saveGoal) * 100) : 0;
 
         return { income, expense, net, budget, saveGoal, spendPct, netPct };
     }, [transactions, currentMonth, target, savingTarget]);
+
+    const onSaveBudget = async () => {
+        try {
+            await upsertGoal({
+                month: currentMonth,
+                target_amount: Number(target),
+                gold_amount: Number(savingTarget),
+            });
+        } catch (e) {
+            console.log("SAVE FAILED:", e.message);
+        }
+    };
+
+    const onSaveSaving = async () => {
+        try {
+            await upsertGoal({
+                month: currentMonth,
+                target_amount: Number(target),
+                gold_amount: Number(savingTarget),
+            });
+        } catch (e) {
+            console.log("SAVE FAILED:", e.message);
+        }
+    };
 
     return (
         <Card className="rounded-2xl border border-slate-200/70 bg-white/80 backdrop-blur shadow-sm dark:border-slate-800 dark:bg-slate-950/40 overflow-hidden">
@@ -50,6 +108,10 @@ export default function AnalyticsGoals() {
                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
                         Track your monthly targets ({monthLabel(currentMonth)})
                     </p>
+
+                    {error ? (
+                        <p className="mt-2 text-xs text-rose-600">{error}</p>
+                    ) : null}
                 </div>
             </CardHeader>
 
@@ -59,6 +121,7 @@ export default function AnalyticsGoals() {
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
                             Monthly Budget Target (Expense)
                         </p>
+
                         <div className="mt-3 flex items-center gap-2">
                             <Input
                                 type="number"
@@ -66,18 +129,23 @@ export default function AnalyticsGoals() {
                                 onChange={(e) => setTarget(e.target.value)}
                                 className="rounded-2xl"
                             />
-                            <Button variant="outline" className="rounded-2xl" type="button">
-                                Save
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl"
+                                type="button"
+                                onClick={onSaveBudget}
+                                disabled={saving}
+                            >
+                                {saving ? "Saving..." : "Save"}
                             </Button>
                         </div>
 
                         <div className="mt-4">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-600 dark:text-slate-400">
-                                    Spent
-                                </span>
+                                <span className="text-slate-600 dark:text-slate-400">Spent</span>
                                 <span className="font-bold text-slate-900 dark:text-white">
-                                    ${Math.round(stats.expense).toLocaleString()} / ${Math.round(stats.budget).toLocaleString()}
+                                    ${Math.round(stats.expense).toLocaleString()} / $
+                                    {Math.round(stats.budget).toLocaleString()}
                                 </span>
                             </div>
                             <div className="mt-2 h-3 w-full rounded-full bg-slate-100 dark:bg-slate-900 overflow-hidden">
@@ -96,6 +164,7 @@ export default function AnalyticsGoals() {
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
                             Monthly Saving Goal (Net)
                         </p>
+
                         <div className="mt-3 flex items-center gap-2">
                             <Input
                                 type="number"
@@ -103,18 +172,23 @@ export default function AnalyticsGoals() {
                                 onChange={(e) => setSavingTarget(e.target.value)}
                                 className="rounded-2xl"
                             />
-                            <Button variant="outline" className="rounded-2xl" type="button">
-                                Save
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl"
+                                type="button"
+                                onClick={onSaveSaving}
+                                disabled={saving}
+                            >
+                                {saving ? "Saving..." : "Save"}
                             </Button>
                         </div>
 
                         <div className="mt-4">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-slate-600 dark:text-slate-400">
-                                    Net
-                                </span>
+                                <span className="text-slate-600 dark:text-slate-400">Net</span>
                                 <span className="font-bold text-slate-900 dark:text-white">
-                                    ${Math.round(stats.net).toLocaleString()} / ${Math.round(stats.saveGoal).toLocaleString()}
+                                    ${Math.round(stats.net).toLocaleString()} / $
+                                    {Math.round(stats.saveGoal).toLocaleString()}
                                 </span>
                             </div>
                             <div className="mt-2 h-3 w-full rounded-full bg-slate-100 dark:bg-slate-900 overflow-hidden">
