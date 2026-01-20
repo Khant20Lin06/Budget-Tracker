@@ -18,7 +18,7 @@ export default function OnboardingLayout({ children }) {
 
     // onboarding ပြီးရင် dashboard
     if (completed) {
-      router.replace("/categories");
+      router.replace("/dashboard");
     }
   }, [completed, router]);
 
