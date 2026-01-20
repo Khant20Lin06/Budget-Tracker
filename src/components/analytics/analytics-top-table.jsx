@@ -79,9 +79,7 @@ export default function AnalyticsTopTable({ filters, transactions = [] }) {
                   </div>
                 ))
               ) : (
-                <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
-                  No notes yet (add a note when creating transactions).
-                </div>
+                <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">No notes yet.</div>
               )}
             </div>
           </div>
@@ -99,9 +97,7 @@ export default function AnalyticsTopTable({ filters, transactions = [] }) {
                   </div>
                 ))
               ) : (
-                <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
-                  No category totals yet.
-                </div>
+                <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">No category totals yet.</div>
               )}
             </div>
           </div>

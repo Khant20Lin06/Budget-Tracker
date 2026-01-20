@@ -5,7 +5,14 @@ import axios from "axios";
 import { EndPoint } from "@/lib/api/endpoints";
 import { getAccessToken } from "@/lib/auth/storage";
 import { Button } from "@/components/ui/button";
-import { Calendar, Tag, StickyNote, Wallet, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import {
+  Calendar,
+  Tag,
+  StickyNote,
+  Wallet,
+  ArrowDownCircle,
+  ArrowUpCircle,
+} from "lucide-react";
 
 export default function TransactionForm({ initialData, onSubmit, onCancel }) {
   const [type, setType] = useState("expense");
@@ -29,11 +36,11 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
     const fetchCats = async () => {
       setLoadingCats(true);
       try {
-        const res = await axios.get(EndPoint.CATEGORYLIST, { headers: authHeader() });
+        const res = await axios.get(EndPoint.CATEGORYLIST, {
+          headers: authHeader(),
+        });
         const list = Array.isArray(res.data) ? res.data : res.data?.results || [];
         setCategories(list);
-      } catch (e) {
-        // keep silent (optional)
       } finally {
         setLoadingCats(false);
       }
@@ -59,7 +66,7 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
     setAmount(initialData.amount != null ? String(initialData.amount) : "");
     setDate(initialData.date || "");
     setNote(initialData.note || "");
-    setCategoryId(initialData.categoryId || initialData.category || "");
+    setCategoryId(String(initialData.categoryId || initialData.category || ""));
   }, [initialData]);
 
   const handleSubmit = async (e) => {
@@ -74,16 +81,29 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
       setErr("Please select a date.");
       return;
     }
+    if (!categoryId) {
+      setErr("Please select a category.");
+      return;
+    }
 
     setSaving(true);
     try {
       await onSubmit?.({
         type,
-        amount,
+        amount: Number(amount),
         date,
         note,
-        categoryId,
+        categoryId: String(categoryId), // ✅ UUID string (NO Number())
       });
+
+      // ✅ reset form after CREATE only
+      if (!initialData?.id) {
+        setType("expense");
+        setAmount("");
+        setDate("");
+        setNote("");
+        setCategoryId("");
+      }
     } catch (e) {
       setErr(e?.message || "Failed to save transaction.");
     } finally {
@@ -95,7 +115,6 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
 
   return (
     <div className="relative">
-      {/* glow */}
       <div className="pointer-events-none absolute -inset-1 rounded-[28px] bg-gradient-to-r from-indigo-500/20 via-sky-500/15 to-emerald-500/20 blur-xl" />
 
       <form
@@ -222,7 +241,6 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
               <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                 <Tag className="h-4 w-4 text-slate-400" />
               </div>
-
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                 ▾
               </div>
@@ -264,11 +282,7 @@ export default function TransactionForm({ initialData, onSubmit, onCancel }) {
             <div />
           )}
 
-          <Button
-            type="submit"
-            className="rounded-2xl px-5"
-            disabled={saving}
-          >
+          <Button type="submit" className="rounded-2xl px-5" disabled={saving}>
             {saving ? (isEdit ? "Updating..." : "Creating...") : isEdit ? "Update" : "Create"}
           </Button>
         </div>

@@ -1,48 +1,35 @@
+// src/app/login/page.jsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EndPoint } from "@/lib/api/endpoints";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/store/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const login = useAuth((s) => s.login);
+  const loading = useAuth((s) => s.loading);
+  const errorStore = useAuth((s) => s.error);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setErr("");
-    setLoading(true);
 
-    try {
-      const response = await axios.post(EndPoint.LOGIN, {
-        username,
-        password,
-      });
+    const res = await login({ username, password });
 
-      // backend returns: { tokens: { access, refresh }, user: {...} }
-      const access = response.data?.tokens?.access;
-      const refresh = response.data?.tokens?.refresh;
-
-      if (!access) throw new Error("No access token returned from API");
-
-      localStorage.setItem("access", access);
-      if (refresh) localStorage.setItem("refresh", refresh);
-
-      // optional user cache
-      localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
-
-      router.push("/categories"); // ✅ login ပြီးရင် ဒီကိုပို့ (လိုသလိုပြောင်း)
-    } catch (e) {
-      setErr(e?.response?.data?.message || e.message || "Login failed");
-    } finally {
-      setLoading(false);
+    if (!res) {
+      setErr(errorStore || "Login failed");
+      return;
     }
+
+    // ✅ login success => onboarding first
+    router.replace("/onboarding?step=1");
   };
 
   return (
@@ -53,9 +40,7 @@ export default function LoginPage() {
       >
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Login</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Sign in to continue
-          </p>
+          <p className="text-sm text-slate-500 mt-1">Sign in to continue</p>
         </div>
 
         {err ? (
@@ -71,6 +56,7 @@ export default function LoginPage() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="your username"
             className="h-11 rounded-2xl"
+            autoComplete="username"
           />
         </div>
 
@@ -82,6 +68,7 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="h-11 rounded-2xl"
+            autoComplete="current-password"
           />
         </div>
 

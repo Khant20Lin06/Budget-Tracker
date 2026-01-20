@@ -1,16 +1,13 @@
+// src/components/onboarding/step-welcome.jsx
 "use client";
 
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useOnboarding } from "@/lib/store/onboarding-store";
 import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function StepWelcome() {
-  const { next } = useOnboarding();
+  const router = useRouter();
 
-  useEffect(() => {
-  // next(); // auto-skip ချင်မှ run once
-}, []);
 
   return (
     <div className="space-y-8">
@@ -29,30 +26,12 @@ export default function StepWelcome() {
       </div>
 
       <div className="rounded-2xl border bg-white/70 backdrop-blur p-5 md:p-6 shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase">Step 1</p>
-            <p className="font-semibold mt-1">Welcome</p>
-            <p className="text-xs text-muted-foreground mt-1">Quick intro</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase">Step 2</p>
-            <p className="font-semibold mt-1">Categories</p>
-            <p className="text-xs text-muted-foreground mt-1">Create your groups</p>
-          </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase">Step 3</p>
-            <p className="font-semibold mt-1">Finish</p>
-            <p className="text-xs text-muted-foreground mt-1">Go dashboard</p>
-          </div>
-        </div>
-
         <div className="mt-5 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
             You can edit categories later anytime.
           </p>
 
-          <Button onClick={next} className="rounded-xl gap-2">
+          <Button onClick={() => router.replace("/login")} className="rounded-xl gap-2">
             Get Started
             <ArrowRight className="h-4 w-4" />
           </Button>

@@ -43,6 +43,30 @@ function buildQuery(params = {}) {
   return s ? `?${s}` : "";
 }
 
+function toCreatePayload(p = {}) {
+  const amountNum = Number(p.amount || 0);
+
+  // category id normalize
+  const catRaw = p.categoryId ?? p.category ?? "";
+  const catNum = catRaw === "" ? null : Number(catRaw);
+
+
+  // ✅ send both keys (backend က category / category_id ဘာယူယူ ok)
+  const body = {
+    type: p.type,                          // "income" | "expense"
+    amount: amountNum,                     // ✅ number
+    date: p.date,                          // ✅ "YYYY-MM-DD"
+    note: p.note || "",
+  };
+
+  // ✅ only attach category when it's a valid number
+  if (Number.isFinite(catNum)) {
+    body.category = catNum;     // backend expects "category"
+  }
+
+  return body;
+}
+
 
 function normalizeTx(t) {
   return {
@@ -99,11 +123,28 @@ export const useTransactions = create((set, get) => ({
   },
 
 
+
+
   // ✅ CREATE
   createTransaction: async (payload) => {
     set({ error: "" });
+
     try {
-      const res = await axios.post(EndPoint.TRANSACTIONCREATE, payload, {
+      const rawCat = payload?.categoryId ?? payload?.category;
+
+      if (!rawCat || String(rawCat).trim() === "") {
+        throw new Error("Category is required.");
+      }
+
+      const body = {
+        type: payload.type,
+        amount: Number(payload.amount),
+        date: payload.date, // "YYYY-MM-DD"
+        note: payload.note || "",
+        category: String(rawCat), // ✅ UUID string (IMPORTANT)
+      };
+
+      const res = await axios.post(EndPoint.TRANSACTIONCREATE, body, {
         headers: authHeader(),
       });
 
@@ -111,16 +152,26 @@ export const useTransactions = create((set, get) => ({
       set((s) => ({ transactions: [tx, ...(s.transactions || [])] }));
       return tx;
     } catch (e) {
+      console.log("CREATE TX ERROR:", e);
+      console.log("CREATE TX STATUS:", e?.response?.status);
+      console.log(
+        "CREATE TX RESPONSE JSON:",
+        JSON.stringify(e?.response?.data || null, null, 2)
+      );
+
       const msg =
         e?.response?.data?.detail ||
-        e?.response?.data?.message ||
         JSON.stringify(e?.response?.data || {}) ||
         e.message ||
         "Create failed";
+
       set({ error: msg });
-      throw e;
+      throw new Error(msg);
     }
   },
+
+
+
 
   // ✅ UPDATE
   updateTransaction: async (id, payload) => {

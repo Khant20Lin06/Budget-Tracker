@@ -11,44 +11,94 @@ function authHeader() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// ✅ month ကို yyyy-mm format ပြန်ထုတ် (backend က month လိုချင်တာများ)
-function monthYYYYMM(d = new Date()) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${yyyy}-${mm}`;
+// ✅ normalize month -> "YYYY-MM" (key for UI lookup)
+function monthKeyFromMonthField(month) {
+  if (!month) return "";
+  // month can be "YYYY-MM-DD" or "YYYY-MM"
+  return String(month).slice(0, 7);
 }
 
-export const useGoals = create((set) => ({
+// ✅ build month start "YYYY-MM-01" for backend
+function monthStartISOFromKey(yyyyMM) {
+  if (!yyyyMM) return "";
+  return `${yyyyMM}-01`;
+}
+
+function normalizeGoal(g) {
+  // backend fields: month, target_amount, gold_amount (per your errors)
+  // month is "YYYY-MM-DD" in backend
+  const key = monthKeyFromMonthField(g.month);
+
+  return {
+    id: g.id,
+    month: g.month,                // "YYYY-MM-DD"
+    monthKey: key,                 // "YYYY-MM" ✅
+    target_amount: Number(g.target_amount || 0),
+    gold_amount: Number(g.gold_amount || 0),
+  };
+}
+
+export const useGoals = create((set, get) => ({
+  goals: [],
   loading: false,
+  saving: false,
   error: "",
 
-  upsertGoal: async ({ month, target_amount, gold_amount }) => {
+  // ✅ LIST
+  fetchGoals: async () => {
     set({ loading: true, error: "" });
     try {
+      const res = await axios.get(EndPoint.GOALLIST, { headers: authHeader() });
+      const raw = res.data;
+      const list = Array.isArray(raw) ? raw : raw?.results || [];
+      set({ goals: list.map(normalizeGoal), loading: false });
+    } catch (e) {
+      set({
+        loading: false,
+        goals: [],
+        error:
+          e?.response?.data?.detail ||
+          e?.response?.data?.message ||
+          e.message ||
+          "Failed to load goals",
+      });
+    }
+  },
+
+  // ✅ GET ONE FOR MONTH (input = "YYYY-MM")
+  getGoalForMonth: (yyyyMM) => {
+    const key = String(yyyyMM || "").slice(0, 7);
+    const goals = get().goals || [];
+    return goals.find((g) => g.monthKey === key) || null;
+  },
+
+  // ✅ UPSERT
+  upsertGoal: async ({ monthKey, target_amount, gold_amount }) => {
+    set({ saving: true, error: "" });
+    try {
       const payload = {
-        month: month || monthYYYYMM(),                 // ✅ REQUIRED
-        target_amount: Number(target_amount || 0),     // ✅ REQUIRED
-        gold_amount: Number(gold_amount || 0),         // ✅ REQUIRED (backend field name!)
+        month: monthStartISOFromKey(String(monthKey).slice(0, 7)), // ✅ "YYYY-MM-01"
+        target_amount: Number(target_amount || 0),
+        gold_amount: Number(gold_amount || 0),
       };
 
       const res = await axios.post(EndPoint.GOALUPSERT, payload, {
         headers: authHeader(),
       });
 
-      set({ loading: false });
+      // ✅ refresh list so UI uses API only
+      await get().fetchGoals();
+
+      set({ saving: false });
       return res.data;
     } catch (e) {
-      console.log("GOAL UPSERT STATUS:", e?.response?.status);
-      console.log("GOAL UPSERT RESPONSE:", e?.response?.data);
-      console.log("GOAL UPSERT PAYLOAD:", { month, target_amount, gold_amount });
-
       const msg =
         e?.response?.data?.detail ||
         JSON.stringify(e?.response?.data || {}) ||
         e.message ||
         "Goal upsert failed";
 
-      set({ loading: false, error: msg });
+      set({ saving: false, error: msg });
       throw new Error(msg);
     }
   },

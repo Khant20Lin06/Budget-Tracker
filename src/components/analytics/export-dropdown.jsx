@@ -71,7 +71,7 @@ export default function ExportDropdown({ onCSV, onExcel, onPrint }) {
               }}
             />
 
-            <div className="my-1 h-px bg-slate-200 dark:bg-slate-800" />
+            {/* <div className="my-1 h-px bg-slate-200 dark:bg-slate-800" />
 
             <MenuItem
               icon={FileText}
@@ -82,7 +82,7 @@ export default function ExportDropdown({ onCSV, onExcel, onPrint }) {
                 setOpen(false);
                 onPrint?.(); // ✅ print-to-pdf
               }}
-            />
+            /> */}
           </div>
         </div>
       )}

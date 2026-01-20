@@ -1,41 +1,63 @@
 // src/lib/api/client.js
-import { getAccessToken } from "@/lib/auth/storage";
+"use client";
 
-export async function apiFetch(url, options = {}) {
-  const method = options.method || "GET";
-  const headers = new Headers(options.headers || {});
+const API_BASE = "http://127.0.0.1:8000/api";
 
-  // JSON default
-  const isFormData = options.body instanceof FormData;
-  if (!isFormData && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+export function getAccessToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("access_token");
+}
+
+export function getRefreshToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refresh_token");
+}
+
+export function setTokens({ access, refresh }) {
+  if (typeof window === "undefined") return;
+  if (access) localStorage.setItem("access_token", access);
+  if (refresh) localStorage.setItem("refresh_token", refresh);
+}
+
+export function clearTokens() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+}
+
+export async function apiFetch(
+  urlOrFull,
+  { method = "GET", body, headers, requireAuth = false } = {} // ✅ add this
+) {
+  const url = urlOrFull.startsWith("http") ? urlOrFull : `${API_BASE}${urlOrFull}`;
+  const token = getAccessToken();
+
+  // ✅ only enforce when requireAuth=true
+  if (requireAuth && !token) {
+    throw new Error("AUTH_REQUIRED");
   }
 
-  // Attach JWT (Django SimpleJWT expects: Authorization: Bearer <token>)
-  const token = getAccessToken();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-
   const res = await fetch(url, {
-    ...options,
     method,
-    headers,
-    body: isFormData
-      ? options.body
-      : options.body
-      ? JSON.stringify(options.body)
-      : undefined,
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(headers || {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
 
-  const contentType = res.headers.get("content-type") || "";
-  const data = contentType.includes("application/json")
-    ? await res.json().catch(() => null)
-    : await res.text().catch(() => "");
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (_) {}
 
   if (!res.ok) {
     const msg =
-      data?.message ||
       data?.detail ||
-      (typeof data === "string" ? data : "API Error");
+      data?.message ||
+      (typeof data === "string" ? data : null) ||
+      `Request failed (${res.status})`;
     throw new Error(msg);
   }
 

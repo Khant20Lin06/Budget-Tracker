@@ -9,8 +9,10 @@ import { Plus } from "lucide-react";
 import axios from "axios";
 import { EndPoint } from "@/lib/api/endpoints";
 import { getAccessToken } from "@/lib/auth/storage";
+import { useRouter } from "next/navigation";
 
 export default function CategoriesPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,23 +25,27 @@ export default function CategoriesPage() {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  const fetchCategories = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await axios.get(EndPoint.CATEGORYLIST, { headers: authHeader() });
-      const list = Array.isArray(res.data) ? res.data : res.data?.results || [];
-      setCategories(list);
-    } catch (e) {
-      setError(e?.response?.data?.detail || e?.response?.data?.message || e.message || "Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    const h = authHeader();
+    if (!h) {
+      router.replace("/login?next=/categories");
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await axios.get(EndPoint.CATEGORYLIST, { headers: h });
+        setCategories(Array.isArray(res.data) ? res.data : res.data?.results || []);
+      } catch (e) {
+        // token expire ဖြစ်လည်း login ပြန်ပို့
+        if (e?.response?.status === 401) {
+          router.replace("/login?next=/categories");
+          return;
+        }
+        setError(e?.message || "Failed");
+      }
+    })();
+  }, [router]);
 
   // ✅ CREATE -> /categories/create/
   const createCategory = async (payload) => {
@@ -80,17 +86,17 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Categories
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Organize your income & expense categories.
           </p>
           {loading && <p className="mt-2 text-sm text-slate-500">Loading...</p>}
-          {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
+          {error && <p className="mt-2 text-sm text-rose-500">{error}</p>}
         </div>
 
         <Dialog
@@ -128,11 +134,11 @@ export default function CategoriesPage() {
         />
       </div>
 
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <Button variant="outline" className="rounded-xl" onClick={fetchCategories}>
           Refresh
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }
