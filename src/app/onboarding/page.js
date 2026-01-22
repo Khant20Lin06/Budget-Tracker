@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from "react";
@@ -20,7 +21,6 @@ export default function OnboardingPage() {
     }
   }, [sp, go]);
 
-  // ✅ step 1/2 ကို token မရှိရင် login သို့ပို့ (step 0 welcome ကိုတော့ public)
   useEffect(() => {
     const stepParam = sp.get("step");
     const stepNum = stepParam ? Number(stepParam) : 0;

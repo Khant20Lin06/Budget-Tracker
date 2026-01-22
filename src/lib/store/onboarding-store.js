@@ -1,13 +1,19 @@
-// src/lib/store/onboarding-store.js
 "use client";
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+// ✅ SSR-safe fallback storage
+const noopStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
+
 export const useOnboarding = create(
   persist(
-    (set, get) => ({
-      step: 0,          // 0=welcome, 1=categories, 2=finish
+    (set) => ({
+      step: 0,
       completed: false,
 
       go: (n) => set({ step: n }),
@@ -19,7 +25,7 @@ export const useOnboarding = create(
     {
       name: "onboarding-storage",
       storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : undefined
+        typeof window !== "undefined" ? window.localStorage : noopStorage
       ),
       partialize: (s) => ({ step: s.step, completed: s.completed }),
     }
