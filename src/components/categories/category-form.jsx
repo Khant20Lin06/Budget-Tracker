@@ -49,8 +49,8 @@ export default function CategoryForm({ initialData, onSubmit }) {
       {/* ✅ SECTION 1: Category Name (standalone, spacious) */}
       <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-slate-900">Category name</p>
-          <p className="text-xs text-slate-600 mt-1">
+          <p className="text-sm font-semibold text-slate-500">Category name</p>
+          <p className="text-xs text-slate-500 mt-1">
             Type a category name and we’ll suggest icons.
           </p>
         </div>
@@ -70,10 +70,10 @@ export default function CategoryForm({ initialData, onSubmit }) {
       <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-slate-500">
               Choose an icon
             </p>
-            <div className="flex items-center gap-2 text-xs text-slate-600 mt-1">
+            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
               <Sparkles className="h-4 w-4" />
               Using all Lucide icons (1600+)
             </div>
@@ -81,7 +81,7 @@ export default function CategoryForm({ initialData, onSubmit }) {
 
           <p className="text-xs text-slate-600">
             Selected:{" "}
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-slate-500">
               {icon || "-"}
             </span>
           </p>

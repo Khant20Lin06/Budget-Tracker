@@ -1,6 +1,12 @@
 
 "use client";
 
+import dynamic from "next/dynamic";
+
+const OnboardingClient = dynamic(() => import("./OnboardingClient"), {
+  ssr: false,
+});
+
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import OnboardingLayout from "@/components/onboarding/onboarding-layout";
@@ -31,8 +37,17 @@ export default function OnboardingPage() {
   }, [sp, router]);
 
   return (
-    <OnboardingLayout>
-      <OnboardingSteps />
-    </OnboardingLayout>
+    <OnboardingClient/>
   );
 }
+
+
+// import dynamic from "next/dynamic";
+
+// const OnboardingClient = dynamic(() => import("./OnboardingClient"), {
+//   ssr: false,
+// });
+
+// export default function OnboardingPage() {
+//   return <OnboardingClient />;
+// }

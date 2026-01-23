@@ -7,26 +7,23 @@ import { getAccessToken } from "@/lib/auth/storage";
 
 export default function OnboardingLayout({ children }) {
   const router = useRouter();
-  const { completed } = useOnboarding();
+  const step = useOnboarding((s) => s.step);
+  const completed = useOnboarding((s) => s.completed);
 
   useEffect(() => {
-    // ❗ login မဝင်ရင် onboarding မပြ
-    if (!getAccessToken()) {
-      router.replace("/login");
+    // ✅ onboarding ပြီးရင် dashboard
+    if (completed) {
+      router.replace("/dashboard");
       return;
     }
 
-    // onboarding ပြီးရင် dashboard
-    if (completed) {
-      router.replace("/dashboard");
+    // ✅ step 1/2 မှာပဲ login စစ် (step0 = welcome free)
+    if ((step === 1 || step === 2) && !getAccessToken()) {
+      router.replace("/login?next=/onboarding?step=1");
     }
-  }, [completed, router]);
+  }, [completed, step, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="w-full max-w-2xl rounded-xl bg-background p-8 shadow">
-        {children}
-      </div>
-    </div>
+    <div className="">{children}</div>
   );
 }
