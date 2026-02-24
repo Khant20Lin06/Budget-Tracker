@@ -1,7 +1,7 @@
 // src/lib/api/client.js
 "use client";
 
-const API_BASE = "https://buget-tracker-api.vercel.app/api";
+const API_BASE = "https://buget-tracker-api.onrender.com/api";
 
 export function getAccessToken() {
   if (typeof window === "undefined") return null;

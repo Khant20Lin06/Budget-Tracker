@@ -1,5 +1,5 @@
 // src/lib/api/endpoints.js
-const API_BASE_URL = "https://buget-tracker-api.vercel.app/api";
+const API_BASE_URL = "https://buget-tracker-api.onrender.com/api";
 
 export const EndPoint = {
   // auth
