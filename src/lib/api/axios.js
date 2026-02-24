@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://buget-tracker-api.vercel.app/api/",
+  baseURL: "https://buget-tracker-api.onrender.com/api/",
 });
 
 api.interceptors.request.use((config) => {
